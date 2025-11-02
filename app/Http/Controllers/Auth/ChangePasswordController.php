@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Ellaisys\Cognito\Auth\ChangePasswords as CognitoChangePasswords; //Added for AWS Cognito
@@ -32,7 +34,7 @@ class ChangePasswordController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    protected string $redirectTo = RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -45,13 +47,18 @@ class ChangePasswordController extends Controller
     }
 
 
-	/**
-	 * Action to update the user password
-	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 */
-    public function actionChangePassword(Request $request)
+    /**
+     * Action to update the user password
+     *
+     * @param Request $request
+     * @return RedirectResponse|Redirector
+     */
+    public function actionChangePassword(Request $request): Redirector|RedirectResponse
     {
+
+        if(session()->has('force_email')) {
+            session()->forget('force_email');
+        }
 
 		try
 		{
@@ -62,7 +69,6 @@ class ChangePasswordController extends Controller
                 'new_password_confirmation' => 'required',
             ]);
 
-
             $validator->validate();
 
             $user = Auth::getUser();
@@ -71,9 +77,7 @@ class ChangePasswordController extends Controller
             }
 
             $email = $user['email'];
-
             $request->merge(['email' => $email]);
-
 
             //Check the password
             if ($this->reset($request)) {
@@ -95,14 +99,14 @@ class ChangePasswordController extends Controller
         } catch(Exception $e) {
 			$message = 'There was a problem while resetting your password.';
 			if ($e instanceof ValidationException) {
-//                dd('Fallo en la validación'.$e->getMessage());
                 throw $e;
             } else if ($e instanceof CognitoIdentityProviderException) {
 				$message = $e->getAwsErrorMessage();
-			} else {
-                //Do nothing
-
-            } //End if
+			}
+//            else {
+//                //Do nothing
+//
+//            } //End if
 
 			return redirect()->back()
 //            return redirect(route('login'))

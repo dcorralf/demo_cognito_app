@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
@@ -30,7 +31,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    protected string $redirectTo = RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -46,11 +47,10 @@ class LoginController extends Controller
     /**
      * Authenticate User
      *
-     * @throws \HttpException
-     *
+     * @param Request $request
      * @return mixed
      */
-    public function login(\Illuminate\Http\Request $request)
+    public function login(\Illuminate\Http\Request $request): mixed
     {
         $response = null;
 
@@ -93,6 +93,8 @@ class LoginController extends Controller
                 ->with('status', 'error')
                 ->with('message', 'Incorrect username and/or password !!');
         } //Try-catch ends
+
+        return $response;
 
     } //Function ends
 } //Class ends

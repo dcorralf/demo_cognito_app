@@ -49,7 +49,7 @@
 
                             <div class="col-md-6">
                                 <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password"
-                                    value="Dcorralf_1975@" autocomplete="password" required autofocus />
+                                    autocomplete="password" required autofocus />
 
                                 @error('password')
                                     <span class="invalid-feedback" role="alert">
@@ -64,7 +64,7 @@
 
                             <div class="col-md-6">
                                 <input id="new_password" type="password" class="form-control @error('new_password') is-invalid @enderror"
-                                    name="new_password" value="Dcorralf_1975@" required autocomplete="new_password" />
+                                    name="new_password" required autocomplete="new_password" />
 
                                 @error('new_password')
                                     <span class="invalid-feedback" role="alert">
@@ -79,7 +79,7 @@
 
                             <div class="col-md-6">
                                 <input id="new_password_confirmation" type="password" class="form-control"
-                                    name="new_password_confirmation" value="Dcorralf_1975@" required autocomplete="new_password_confirmation" />
+                                    name="new_password_confirmation" required autocomplete="new_password_confirmation" />
                             </div>
                         </div>
 

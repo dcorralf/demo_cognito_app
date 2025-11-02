@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use Ellaisys\Cognito\AwsCognitoClient;
 use Ellaisys\Cognito\Exceptions\InvalidUserFieldException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Request;
 use App\Models\User;
@@ -20,7 +21,11 @@ class UserController extends BaseController
     use SendsPasswordResetEmails;
     use ResetsPasswords;
 
-    public function webRegister(Request $request)
+    /**
+     * @throws InvalidUserFieldException
+     * @throws BindingResolutionException
+     */
+    public function webRegister(Request $request): \Illuminate\Http\RedirectResponse
     {
         $cognitoRegistered = false;
 
@@ -57,7 +62,6 @@ class UserController extends BaseController
             // Save user locally (only if needed for your app)
             unset($data['password']);
 //            unset($data['phone_number']);
-            //unset($data['password']);
             $data['name'] = $request->get('name');
 
 
@@ -92,11 +96,14 @@ class UserController extends BaseController
     /**
      * Handle a registration request for the application.
      *
-     * @param  \Illuminate\Support\Collection  $request
-     * @return \Illuminate\Http\Response
+     * @param Collection $request
+     * @param array|null $clientMetadata
+     * @param string|null $groupname
+     * @return false|mixed
      * @throws InvalidUserFieldException
+     * @throws BindingResolutionException
      */
-    public function createUser(Collection $request, array $clientMetadata=null, string $groupname=null)
+    public function createUser(Collection $request, ?array $clientMetadata=null, ?string $groupname=null): mixed
     {
         //Initialize Cognito Attribute array
         $attributes = [];
@@ -129,16 +136,33 @@ class UserController extends BaseController
             $password = $request->has($this->paramPassword) ? $request[$this->paramPassword] : null;
         }
 
-//        app()->make(AwsCognitoClient::class)->register(
-//            //$request[$userKey], $password, $attributes
-//            $request->get('name'), $password, $attributes
-//        );
 
-        app()->make(AwsCognitoClient::class)->inviteUser(
-            $request->get('name'), $password, $attributes,
-            $clientMetadata, $messageAction,
-            $groupname
-        );
+        if (config('cognito.force_password_change_web', true)) {
+            //Force validate email
+            if ($attributes['email'] && config('cognito.force_new_user_email_verified', false)) {
+                $attributes['email_verified'] = 'true';
+            } //End if
+
+            //Force validate phone number
+            if ($attributes['phone_number'] && config('cognito.force_new_user_phone_verified', false)) {
+                $attributes['phone_number_verified'] = 'true';
+            } //End if
+
+            app()->make(AwsCognitoClient::class)->inviteUser(
+                $request->get('name'), $password, $attributes,
+                $clientMetadata, $messageAction,
+                $groupname
+            );
+        } else {
+            // This register action bellow do not allow to verify neither email nor password,
+            // since in this context these attributes are immutable. But to solve these question
+            // we can set a pre-signup lambda function in Cognito that performs these actions automatically.
+
+            app()->make(AwsCognitoClient::class)->register(
+            //$request[$userKey], $password, $attributes
+                $request->get('name'), $password, $attributes
+            );
+        }
 
         return app()->make(AwsCognitoClient::class)->getUser($request['name']);
 
