@@ -1,5 +1,5 @@
 {
-    "name": "cordev-developer/demo-cognito-app",
+    "name": "dcorralf/demo-cognito-app",
     "type": "project",
     "description": "Aplicación de ejemplo Laravel 12 con autenticación y gestión de usuarios mediante AWS Cognito.",
     "require": {
@@ -16,7 +16,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/cordev-developer/aws-cognito-php"
+            "url": "https://github.com/dcorralf/aws-cognito-php"
         }
     ],
     "autoload": {
