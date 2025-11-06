@@ -71,6 +71,7 @@ return [
         'preferred_username' => null,
         'email' => 'email', //Do Not set this parameter to null
         'phone_number' => 'phone_number',
+//        'phone_number' => null,
         'gender' => null,
         'birthdate' => null,
         'locale' => null

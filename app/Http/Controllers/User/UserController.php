@@ -33,6 +33,7 @@ class UserController extends BaseController
         $validator = $request->validate([
             'name'                  => 'required|string|max:50',
             'email'                 => 'required|string|email|max:64|unique:users',
+            // Comment below to avoid phone_number attribute
             'phone'                 => 'required|string|min:8|max:20',
             'password'              => 'required|string|min:8|max:64|confirmed',
             'password_confirmation' => 'required|string|min:8|max:64',
@@ -41,6 +42,7 @@ class UserController extends BaseController
         // 2. Prepare user data for local database
         $data['name'] = $request->get('name');
         $data['email'] = $request->get('email');
+        // Comment below to avoid phone_number attribute
         $data['phone_number'] = $request->get('phone');
 
 
@@ -89,7 +91,7 @@ class UserController extends BaseController
                 ->withInput()
                 ->with('status', 'error')
                 ->with('message', 'The user already exists in Cognito')
-                ->withErrors(['email' => 'The email is already taken.']);
+                ->withErrors(['email' => 'The email or username is already taken.']);
         }
     }
 
@@ -128,7 +130,7 @@ class UserController extends BaseController
         } //Loop ends
 
         //Register the user in Cognito
-        $userKey = $request->has('username')?'username':'email';
+        //$userKey = $request->has('username')?'username':'email';
 
         //Password parameter
         $password = null;
@@ -139,12 +141,12 @@ class UserController extends BaseController
 
         if (config('cognito.force_password_change_web', true)) {
             //Force validate email
-            if ($attributes['email'] && config('cognito.force_new_user_email_verified', false)) {
+            if (!empty(['email']) && config('cognito.force_new_user_email_verified', false)) {
                 $attributes['email_verified'] = 'true';
             } //End if
 
             //Force validate phone number
-            if ($attributes['phone_number'] && config('cognito.force_new_user_phone_verified', false)) {
+            if (!empty($attributes['phone_number']) && config('cognito.force_new_user_phone_verified', false)) {
                 $attributes['phone_number_verified'] = 'true';
             } //End if
 
